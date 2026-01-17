@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 import ToastShelf from "../ToastShelf";
 
@@ -21,6 +21,20 @@ function ToastProvider({ children }) {
   function dismissToast(id) {
     setToasts(toasts.filter((toast) => toast.id !== id));
   }
+
+  useEffect(() => {
+    function dismissAllToasts(event) {
+      if (event.key !== "Escape") {
+        return;
+      }
+
+      setToasts([]);
+    }
+
+    window.addEventListener("keydown", dismissAllToasts);
+
+    return () => window.removeEventListener("keydown", dismissAllToasts);
+  }, []);
 
   return (
     <ToastContext value={{ showToast }}>
