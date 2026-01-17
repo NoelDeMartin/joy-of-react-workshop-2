@@ -1,12 +1,13 @@
-import React, { useEffect } from "react";
+import React from "react";
 
 import ToastShelf from "../ToastShelf";
+import useEscapeKey from "../../hooks/useEscapeKey";
 
 export const ToastContext = React.createContext();
 
 function ToastProvider({ children }) {
   const [toasts, setToasts] = React.useState([]);
-
+  const dismissAllToasts = React.useCallback(() => setToasts([]), []);
   const showToast = React.useCallback(({ variant, message }) => {
     setToasts((toasts) => [
       ...toasts,
@@ -18,27 +19,14 @@ function ToastProvider({ children }) {
     ]);
   }, []);
 
-  function dismissToast(id) {
-    setToasts(toasts.filter((toast) => toast.id !== id));
-  }
-
-  useEffect(() => {
-    function dismissAllToasts(event) {
-      if (event.key !== "Escape") {
-        return;
-      }
-
-      setToasts([]);
-    }
-
-    window.addEventListener("keydown", dismissAllToasts);
-
-    return () => window.removeEventListener("keydown", dismissAllToasts);
-  }, []);
+  useEscapeKey(dismissAllToasts);
 
   return (
     <ToastContext value={{ showToast }}>
-      <ToastShelf toasts={toasts} onDismiss={dismissToast} />
+      <ToastShelf
+        toasts={toasts}
+        onDismiss={(id) => setToasts(toasts.filter((toast) => toast.id !== id))}
+      />
 
       {children}
     </ToastContext>
